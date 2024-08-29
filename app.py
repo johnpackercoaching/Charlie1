@@ -3,6 +3,9 @@ import streamlit as st
 import openai
 import time
 
+# Use the API key from Streamlit secrets
+openai.api_key = st.secrets["api_keys"]["openai"]
+
 assistant_id = "asst_82OOegTJqHOoI1PmZSTvk8Sa"
 model_number = "gpt4o"
 client = openai
@@ -14,12 +17,13 @@ if "thread_id" not in st.session_state:
 
 st.set_page_config(page_title="charlie", page_icon=":speech_balloon:")
 
-openai.api_key = 'OPEN_API_KEY'
-
 if st.sidebar.button("start_chat"):
     st.session_state.start_chat = True
-    thread = client.beta.threads.create()
-    st.session_state.thread_id = thread.id
+    try:
+        thread = client.beta.threads.create()
+        st.session_state.thread_id = thread.id
+    except Exception as e:
+        st.error(f"Error creating thread: {e}")
 
 if st.button("Exit Chat"):
     st.session_state.messages = []  # clear chat history
@@ -33,46 +37,52 @@ if st.session_state.start_chat:
         st.session_state.messages = []
 
     for message in st.session_state.messages:
-        with st.chat_message(message["role"]):
-            st.markdown(message["content"])
+        st.write(f"{message['role']}: {message['content']}")  # Replace with st.chat_message if applicable
 
 if prompt := st.chat_input("Let's Go!"):
     st.session_state.messages.append({"role": "user", "content": prompt})
-    with st.chat_message("user"):
-        st.markdown(prompt)
+    st.write(f"user: {prompt}")  # Replace with st.chat_message if applicable
 
-client.beta.threads.messages.create(
-    thread_id=st.session_state.thread_id,
-    role="user",
-    content=prompt
-)
+    try:
+        client.beta.threads.messages.create(
+            thread_id=st.session_state.thread_id,
+            role="user",
+            content=prompt
+        )
+    except Exception as e:
+        st.error(f"Error sending message: {e}")
 
-run = client.beta.threads.runs.create(
-    thread_id=st.session_state.thread_id,
-    assistant_id=assistant_id,
-    instructions="Please answer the queries with meows as you are a cat."
-)
-while run.status != 'completed':
-    time.sleep(1)
-    run = client.beta.threads.runs.retrieve(
-        thread_id=st.session_state.thread_id,
-        run_id=run.id
-    )
+    try:
+        run = client.beta.threads.runs.create(
+            thread_id=st.session_state.thread_id,
+            assistant_id=assistant_id,
+            instructions="Please answer the queries with meows as you are a cat."
+        )
+        while run.status != 'completed':
+            time.sleep(1)
+            run = client.beta.threads.runs.retrieve(
+                thread_id=st.session_state.thread_id,
+                run_id=run.id
+            )
+    except Exception as e:
+        st.error(f"Error running assistant: {e}")
 
-messages = client.beta.threads.messages.list(
-    thread_id=st.session_state.thread_id
-)
+    try:
+        messages = client.beta.threads.messages.list(
+            thread_id=st.session_state.thread_id
+        )
+    except Exception as e:
+        st.error(f"Error retrieving messages: {e}")
 
-# Process and display assistant messages
-assistant_messages_for_run = [
-    message for message in messages
-    if message.run_id == run.id and message.role == "assistant"
-]
+    # Process and display assistant messages
+    assistant_messages_for_run = [
+        message for message in messages
+        if message.run_id == run.id and message.role == "assistant"
+    ]
 
-for message in assistant_messages_for_run:
-    st.session_state.messages.append({"role": "assistant", "content": message.content})
-    with st.chat_message("assistant"):
-        st.markdown(message.content)
+    for message in assistant_messages_for_run:
+        st.session_state.messages.append({"role": "assistant", "content": message.content})
+        st.write(f"assistant: {message.content}")  # Replace with st.chat_message if applicable
 
 # Retrieve the secret from the environment variable
 super_quiet_value = os.getenv("SUPER_QUIET")
