@@ -1,3 +1,7 @@
+
+pip uninstall numpy
+pip install numpy
+
 import os
 import streamlit as st
 import openai
