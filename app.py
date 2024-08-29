@@ -7,26 +7,26 @@ assistant_id = "asst_82OOegTJqHOoI1PmZSTvk8Sa"
 model_number = "gpt4o"
 client = openai
 
-if "star_chat" not in st.session_state:
-    st.session_state.start_chat = false
+if "start_chat" not in st.session_state:
+    st.session_state.start_chat = False
 if "thread_id" not in st.session_state:
-    st.session_state.start_chat = none
+    st.session_state.thread_id = None
 
-st.set_page_config(page_title="charlie", page_icon=":speech+baloon:")
+st.set_page_config(page_title="charlie", page_icon=":speech_balloon:")
 
 openai.api_key = "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"
 
-if st.sidebar.button("start_chat"(:
-    st.session_state.start_chat = true
+if st.sidebar.button("start_chat"):
+    st.session_state.start_chat = True
     thread = client.beta.threads.create()
     st.session_state.thread_id = thread.id
 
-if st.button)"Exit Chat"):
-    st.session_state.messages = [] #clear chat history
-  st.session_state.start_chat = false #reset the chat state
-  st.session_state.thread_id = none
+if st.button("Exit Chat"):
+    st.session_state.messages = []  # clear chat history
+    st.session_state.start_chat = False  # reset the chat state
+    st.session_state.thread_id = None
 
-If st.session_state.start_chat:
+if st.session_state.start_chat:
     if "openai_model" not in st.session_state:
         st.session_state.openai_model = model_number
     if "messages" not in st.session_state:
@@ -34,7 +34,7 @@ If st.session_state.start_chat:
 
     for message in st.session_state.messages:
         with st.chat_message(message["role"]):
-          st.markdown(message["content"])
+            st.markdown(message["content"])
 
 if prompt := st.chat_input("Let's Go!"):
     st.session_state.messages.append({"role": "user", "content": prompt})
@@ -72,18 +72,10 @@ assistant_messages_for_run = [
 for message in assistant_messages_for_run:
     st.session_state.messages.append({"role": "assistant", "content": message.content})
     with st.chat_message("assistant"):
-        st.markdown(message.content[0].text.value)
-else:
-    st.write("Click 'Start Chat' to begin.")
-
-  
-
-
+        st.markdown(message.content)
 
 # Retrieve the secret from the environment variable
 super_quiet_value = os.getenv("SUPER_QUIET")
 
 # Display the value in Streamlit
 st.write(f"The secret value is: {super_quiet_value}")
-
-
