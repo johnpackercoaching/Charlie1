@@ -14,7 +14,7 @@ if "thread_id" not in st.session_state:
 
 st.set_page_config(page_title="charlie", page_icon=":speech_balloon:")
 
-openai.api_key = "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"
+openai.api_key = 'OPEN_API_KEY'
 
 if st.sidebar.button("start_chat"):
     st.session_state.start_chat = True
